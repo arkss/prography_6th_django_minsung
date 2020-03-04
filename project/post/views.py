@@ -2,13 +2,22 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Post
 from .serializers import PostSerializer
+from .paginations import PostPageNumberPagination
 
 
 class PostView(APIView):
+    pagination_class = PostPageNumberPagination
+    serializer_class = PostSerializer
+
     def get(self, request, *args, **kwargs):
         queryset = Post.objects.all()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_paginated_response(
+                self.serializer_class(page, many=True).data)
 
-        serializer = PostSerializer(queryset, many=True)
+        else:
+            serializer = self.serializer_class(page, many=True)
         return Response({
             'data': serializer.data
         })
@@ -30,6 +39,36 @@ class PostView(APIView):
             'response': 'success',
             'message': 'post가 성공적으로 생성되었습니다.'
         })
+
+    @property
+    def paginator(self):
+        """
+        The paginator instance associated with the view, or `None`.
+        """
+        print("123")
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+
+    def paginate_queryset(self, queryset):
+        print("456")
+        """
+        Return a single page of results, or `None` if pagination is disabled.
+        """
+        if self.paginator is None:
+            return None
+        return self.paginator.paginate_queryset(queryset, self.request, view=self)
+
+    def get_paginated_response(self, data):
+        """
+        Return a paginated style `Response` object for the given output data.
+        """
+        print("@@@")
+        assert self.paginator is not None
+        return self.paginator.get_paginated_response(data)
 
 
 class PostDetailView(APIView):
