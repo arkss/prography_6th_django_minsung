@@ -1,19 +1,22 @@
 # prography_6th_django_minsung
 
-#### 기술스택
+### 기술스택
 
 Python==3.7.1
+
 Django==3.0.3
+
 djangorestframework==3.11.0
+
 MySQL==8.0.19
 
 
 
-#### API 문서
+### API 문서
 
-##### myauth
+#### myauth
 
-myauth/login/
+##### myauth/login/
 
 * POST
 
@@ -32,7 +35,7 @@ myauth/login/
 
 
 
-myauth/logout
+##### myauth/logout
 
 * GET
 
@@ -42,7 +45,7 @@ myauth/logout
 
 
 
-myauth/sign_up/
+##### myauth/sign_up/
 
 * POST
 
@@ -62,9 +65,9 @@ myauth/sign_up/
 
 
 
-##### post
+#### post
 
-post/
+##### post/
 
 * GET
 
@@ -117,7 +120,7 @@ post/
 
     
 
-post/\<int:post_id>/
+##### post/\<int:post_id>/
 
 * GET
 
@@ -159,7 +162,7 @@ post/\<int:post_id>/
 
     
 
-#### 기타 특이사항
+### 기타 특이사항
 
 * Profile 모델
 
