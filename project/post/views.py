@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import permissions
 from .models import Post
 from .serializers import PostSerializer
 from .paginations import PostPageNumberPagination
@@ -8,6 +9,7 @@ from .paginations import PostPageNumberPagination
 class PostView(APIView):
     pagination_class = PostPageNumberPagination
     serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         queryset = Post.objects.all()
@@ -32,9 +34,12 @@ class PostView(APIView):
         }
         '''
         data = request.data['post']
+
+        FK = dict()
+        FK['profile'] = request.user
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
-            post = serializer.save()
+            post = serializer.save(FK=FK)
         return Response({
             'response': 'success',
             'message': 'post가 성공적으로 생성되었습니다.'
