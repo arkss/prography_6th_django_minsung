@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -34,7 +35,12 @@ class PostView(APIView):
             }
         }
         '''
-        data = request.data['post']
+        data = request.data.get('post')
+        if data is None:
+            return Response({
+                'response': 'error',
+                'message': 'post 값이 없습니다.'
+            })
 
         FK = dict()
         FK['profile'] = request.user
@@ -78,12 +84,20 @@ class PostDetailView(APIView):
     permission_classes = [IsOwnerOnly]
 
     def get_object(self, post_id):
-        post = Post.objects.get(id=post_id)
+        try:
+            post = Post.objects.get(id=post_id)
+        except ObjectDoesNotExist:
+            return None
         self.check_object_permissions(self.request, post)
         return post
 
     def get(self, request, post_id):
         post = self.get_object(post_id)
+        if post is None:
+            return Response({
+                'response': 'error',
+                'message': 'post값이 존재하지 않습니다.'
+            })
         serializer = PostSerializer(post)
         return Response({
             'data': serializer.data
@@ -97,6 +111,11 @@ class PostDetailView(APIView):
         '''
 
         post = self.get_object(post_id)
+        if post is None:
+            return Response({
+                'response': 'error',
+                'message': 'post값이 존재하지 않습니다.'
+            })
         serializer = PostSerializer(post, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -106,6 +125,11 @@ class PostDetailView(APIView):
 
     def delete(self, request, post_id):
         post = self.get_object(post_id)
+        if post is None:
+            return Response({
+                'response': 'error',
+                'message': 'post값이 존재하지 않습니다.'
+            })
         post.delete()
         return Response({
             'response': 'success',

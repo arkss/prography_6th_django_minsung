@@ -1,5 +1,6 @@
 from django.contrib.auth.hashers import check_password
 from django.contrib import auth
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from rest_framework import permissions
 from rest_framework.views import APIView
@@ -28,7 +29,13 @@ class CreateProfileView(APIView):
             }
         }
         '''
-        data = request.data['profile']
+        data = request.data.get('profile')
+        if data is None:
+            return Response({
+                'response': 'error',
+                'message': 'profile 값이 없습니다.'
+            })
+
         serializer = ProfileSerializer(data=data)
         if serializer.is_valid():
             profile = serializer.save()
@@ -72,13 +79,23 @@ class UserLoginView(APIView):
             }
         }
         '''
-        data = request.data['profile']
+        data = request.data.get('profile')
+        if data is None:
+            return Response({
+                'response' 'error',
+                'message': 'profile 값이 없습니다.'
+            })
         username = data['username']
         password = data['password']
 
         profile = auth.authenticate(
             request, username=username, password=password
         )
+        if profile is None:
+            return Response({
+                'response': 'error',
+                'message': '해당 유저가 존재하지 않습니다.'
+            })
 
         if profile.status == '0':
             return Response({
@@ -106,7 +123,13 @@ def logout(request):
 
 def profile_activate(request, uuid):
     profile_id = force_text(urlsafe_base64_decode(uuid))
-    profile = Profile.objects.get(id=profile_id)
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except ObjectDoesNotExist:
+        return Response({
+            'response': 'error',
+            'message': '해당 profile이 존재하지 않습니다.'
+        })
     profile.status = '1'
     profile.save()
     return HttpResponse("이메일 인증에 성공하였습니다.")

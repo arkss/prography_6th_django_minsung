@@ -196,3 +196,22 @@ MySQL==8.0.19
   * django rest framework 기본 permissions인 `AllowAny`,  `IsAuthenticated` 외에 커스텀 permissions
   * `config/permissions` 에 `IsOwnerOnly` 
   * 작성자에게만 허용
+
+
+
+* error handling
+
+  여러 상황에 대한 에러 핸들링을 하고 있습니다.
+
+  ```python
+  # post/views.py
+  
+  post = self.get_object(post_id)
+  if post is None:
+    return Response({
+      'response': 'error',
+      'message': 'post값이 존재하지 않습니다.'
+    })
+  ```
+
+  
