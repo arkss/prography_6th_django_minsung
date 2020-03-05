@@ -215,3 +215,7 @@ MySQL==8.0.19
   ```
 
   
+
+* 배포
+
+  http://rkdalstjd9.pythonanywhere.com/

@@ -82,7 +82,7 @@ class UserLoginView(APIView):
         data = request.data.get('profile')
         if data is None:
             return Response({
-                'response' 'error',
+                'response': 'error',
                 'message': 'profile 값이 없습니다.'
             })
         username = data['username']
