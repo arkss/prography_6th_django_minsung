@@ -1,14 +1,18 @@
 from django.contrib.auth.hashers import check_password
 from django.contrib import auth
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from .models import Profile
+from .serializers import ProfileSerializer
 # mail 인증
 from uuid import uuid4
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
 # Create your views here.
 
 
@@ -19,7 +23,7 @@ class CreateProfileView(APIView):
             "profile": {
                 "username": "rkdalstjd1",
                 "password": "password1",
-                "email": "rkdalstjd9@naver.com",
+                "email": "rkdalstjd9@naver.com"
             }
         }
         '''
@@ -27,8 +31,13 @@ class CreateProfileView(APIView):
         serializer = ProfileSerializer(data=data)
         if serializer.is_valid():
             profile = serializer.save()
-
-        uuid = uuid4()
+        else:
+            return Response({
+                'response': 'error',
+                'message': serializer.errors
+            })
+        print(profile)
+        uuid = urlsafe_base64_encode(force_bytes(profile.id)).encode().decode()
         current_site = get_current_site(request)
         message = render_to_string(
             'myauth/user_activate_email.html',
@@ -40,10 +49,17 @@ class CreateProfileView(APIView):
         mail_subject = "회원가입 인증 메일입니다."
         user_email = profile.email
         email = EmailMessage(mail_subject, message, to=[user_email])
-        return Response({
-            'response': 'success',
-            'message': 'profile이 성공적으로 생성되었습니다. 이메일을 확인해주세요.'
-        })
+        email_result = email.send()
+        if email_result == 1:
+            return Response({
+                'response': 'success',
+                'message': 'profile이 성공적으로 생성되었습니다. 이메일을 확인해주세요.'
+            })
+        else:
+            return Response({
+                'response': 'error',
+                'message': '이메일 발송에 실패하였습니다.'
+            })
 
 
 class UserLoginView(APIView):
@@ -60,7 +76,7 @@ class UserLoginView(APIView):
         username = data['username']
         password = data['password']
 
-        profile = auth.autheticate(
+        profile = auth.authenticate(
             request, username=username, password=password
         )
 
@@ -71,7 +87,7 @@ class UserLoginView(APIView):
             })
 
         elif profile.status == '1':
-            auth.login(reques, profile)
+            auth.login(request, profile)
             return Response({
                 'response': 'success',
                 'message': '로그인이 성공하였습니다.'
@@ -88,4 +104,8 @@ def logout(request):
 
 
 def profile_activate(request, uuid):
-    pass
+    profile_id = force_text(urlsafe_base64_decode(uuid))
+    profile = Profile.objects.get(id=profile_id)
+    profile.status = '1'
+    profile.save()
+    return HttpResponse("이메일 인증에 성공하였습니다.")

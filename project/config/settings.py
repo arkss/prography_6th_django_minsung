@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 import json
+from django.core.exceptions import ImproperlyConfigured
 import os
 from os.path import abspath, dirname, join
 

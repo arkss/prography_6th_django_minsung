@@ -17,7 +17,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email, password=None):
         user = self.create_user(
             username=username,
-            email=self.normailize_email(email),
+            email=self.normalize_email(email),
             password=password
         )
         user.role = "10"
@@ -58,3 +58,6 @@ class Profile(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
+
+    def __str__(self):
+        return self.username
