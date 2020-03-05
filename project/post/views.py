@@ -92,7 +92,7 @@ class PostDetailView(APIView):
     def put(self, request, post_id):
         '''
         {
-            "content": "스마일 세탁소 사랑해요!"
+            "title": "첫번째 글 수정"
         }
         '''
 
