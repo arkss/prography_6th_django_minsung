@@ -4,6 +4,7 @@ from rest_framework import permissions
 from .models import Post
 from .serializers import PostSerializer
 from .paginations import PostPageNumberPagination
+from config.permissions import IsOwnerOnly
 
 
 class PostView(APIView):
@@ -50,7 +51,6 @@ class PostView(APIView):
         """
         The paginator instance associated with the view, or `None`.
         """
-        print("123")
         if not hasattr(self, '_paginator'):
             if self.pagination_class is None:
                 self._paginator = None
@@ -59,7 +59,6 @@ class PostView(APIView):
         return self._paginator
 
     def paginate_queryset(self, queryset):
-        print("456")
         """
         Return a single page of results, or `None` if pagination is disabled.
         """
@@ -71,14 +70,16 @@ class PostView(APIView):
         """
         Return a paginated style `Response` object for the given output data.
         """
-        print("@@@")
         assert self.paginator is not None
         return self.paginator.get_paginated_response(data)
 
 
 class PostDetailView(APIView):
+    permission_classes = [IsOwnerOnly]
+
     def get_object(self, post_id):
         post = Post.objects.get(id=post_id)
+        self.check_object_permissions(self.request, post)
         return post
 
     def get(self, request, post_id):

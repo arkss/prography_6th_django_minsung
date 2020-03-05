@@ -36,7 +36,6 @@ class CreateProfileView(APIView):
                 'response': 'error',
                 'message': serializer.errors
             })
-        print(profile)
         uuid = urlsafe_base64_encode(force_bytes(profile.id)).encode().decode()
         current_site = get_current_site(request)
         message = render_to_string(
